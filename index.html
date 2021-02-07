@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en-us">
 <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
     <meta charset="utf-8">
@@ -8,12 +8,12 @@
           content='Fernanda Araujo, Fernanda Araujo Fernandes, UI Designer, Frontend, iOS, developer, desenvolvedora, mobile app'>
     <meta name='author' content='Fernanda Araujo'>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex">
     <title>Fernanda Araujo Portfolio</title>
     <link href="assets/css/main.min.css" rel="stylesheet">
-    <link href="assets/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
-    <link rel="icon" type="image/png" href="assets/img/favicon-32x32.png" sizes="32x32">
-    <meta name="theme-color" content="#2f89fc">
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;600;700&family=Nunito:wght@300;400;600;700;800&display=swap" rel="stylesheet">    <link rel="icon" type="image/png" href="assets/img/favicon-32x32.png" sizes="32x32">
     <script src="https://code.jquery.com/jquery-1.11.0.min.js"></script>
     <script async src="https://www.googletagmanager.com/gtag/js?id=UA-152742205-1"></script>
     <script>
@@ -62,27 +62,30 @@
     <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WDMXFQP"
                   height="0" width="0" style="display:none;visibility:hidden"></iframe>
 </noscript>
-<div class="container-portfolio">
-    <div class="presentation-container">
-        <div class="animated-container">
-            <div class="top-text">
-                <div class="first-block">
-                    <span class="page-name-text">Fernanda's portfolio</span>
-                    <span class="commented-text">// Under construction</span>
-                </div>
-            </div>
-            <div class="bottom-text">
-                <span class="normal-text">Come back soon!</span>
-                <a href="https://www.linkedin.com/in/fernandaaraujof/" alt="Linkedin profile link" id="linkedin"
-                   target="_blank">
-                    <i class="fa fa-linkedin-square" aria-hidden="true"></i>
-                </a>
-            </div>
-        </div>
+<main class="container">
+    <div class="toggle toggle--push">
+        <input type="checkbox" id="toggle--push" class="toggle--checkbox">
+        <label class="toggle--btn" for="toggle--push" data-label-on="on"  data-label-off="off"></label>
     </div>
-    <div class="home-image-container">
-        <img alt="Home image illustration" src="assets/img/website-home.png"/>
-    </div>
-</div>
+    <img class="avatar" src="assets/img/avatar.svg">
+    <section class="about">
+        <p class="present">Fernanda Araujo is currently a Senior Frontend and Mobile Developer at <b><a href="https://www.linkedin.com/company/sanar/about/" target="_blank">Sanar</a></b>.</p>
+        <p class="present">Previously she was a Senior Consultant Developer at <b><a href="https://www.thoughtworks.com/" target="_blank">ThoughtWorks.</a></b></p>
+        <p class="links">
+            <a class="social" href="mailto:nanda.arf@gmail.com">Email</a>
+            <a class="social" target="_blank" href="https://www.linkedin.com/in/fernandaaraujof/">Linkedin</a>
+            <a class="social" target="_blank" href="https://github.com/fernandaaraujo">Github</a>
+            <a class="social" target="_blank" href="https://dribbble.com/faraujof">Dribbble</a>
+            <a class="social" target="_blank" href="https://drive.google.com/file/d/1U2jTvzXt1xVu7-6zKR2SmRqvgQoAudkR/view?usp=sharing">Resume</a>
+        </p>
+    </section>
+</main>
+<script>
+  document.getElementById('toggle--push').onclick = function() {
+    if (document.body.classList && document.body.classList.toggle) {
+      document.body.classList.toggle('day');
+    }
+  };
+</script>
 </body>
 </html>
