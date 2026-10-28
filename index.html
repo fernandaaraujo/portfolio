@@ -1,91 +1,456 @@
-<!DOCTYPE html>
-<html lang="en-us">
+<!doctype html>
+<html lang="en">
 <head>
-    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-    <meta charset="utf-8">
-    <meta name='description' content='Fernanda Araujo | Portfolio'>
-    <meta name='keywords'
-          content='Fernanda Araujo, Fernanda Araujo Fernandes, UI Designer, Frontend, iOS, developer, desenvolvedora, mobile app'>
-    <meta name='author' content='Fernanda Araujo'>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="robots" content="noindex">
-    <title>Fernanda Araujo Portfolio</title>
-    <link href="assets/css/main.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
-    <link rel="preconnect" href="https://fonts.gstatic.com">
-    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;600;700&family=Nunito:wght@300;400;600;700;800&display=swap" rel="stylesheet">    <link rel="icon" type="image/png" href="assets/img/favicon-32x32.png" sizes="32x32">
-    <script src="https://code.jquery.com/jquery-1.11.0.min.js"></script>
-    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-152742205-1"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Fernanda Air</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;600;700&family=VT323&display=swap">
+<style>
+html,body{margin:0}[hidden]{display:none!important}img{max-width:100%}
+/* Layout: one-screen app. A dot-matrix world map fills the screen; a pixel plane flies the career route
+   (10 stops, 2010 → now). Each stop opens a paper boarding pass (right on desktop, bottom sheet on phone).
+   Timeline + controls along the bottom; a Passport overlay collects stamps for skills, courses and awards. */
+:root{
+  color-scheme: dark;
+  --sea:#050a18; --land:#1d2a4c; --land-hi:#2c3d6b; --ink:#fff; --ink-soft:#d4d9ea; --ink-muted:#8e98b4;
+  --route:#f6c343; --pin:#5fd68e; --now:#ff5ea8; --sky:#7cc7ff; --violet:#c9a2ff;
+  --paper:#f4eedf; --paper-2:#e9e1cc; --paper-ink:#1c1b29; --paper-muted:#5d5a6e; --stub:#f6c343;
+  --mono:"Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --pixel:VT323, "Geist Mono", ui-monospace, monospace;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+html{background:var(--sea)}
+body{background:var(--sea);color:var(--ink);font-family:var(--mono);font-size:14px;line-height:1.5;overflow:hidden}
+a{color:var(--sky)} a:hover{color:var(--route)}
+:focus-visible{outline:3px solid var(--route);outline-offset:2px}
+button{font-family:inherit}
+.app{height:100%;display:flex;flex-direction:column}
 
-      function gtag() {
-        dataLayer.push(arguments);
-      }
+/* top bar */
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:10px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));border-bottom:1px solid #18223f;background:#040817;z-index:10;position:relative}
+.pilot{display:flex;align-items:center;gap:12px;min-width:0}
+.pilot img{width:40px;height:50px;image-rendering:pixelated;background:#1d2a4c;border:2px solid var(--route);flex:none}
+.pilot div{min-width:0}
+.pilot b{display:block;font-family:var(--pixel);font-weight:400;font-size:28px;line-height:.9;letter-spacing:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pilot span{display:block;font-size:11px;letter-spacing:1.6px;color:var(--ink-muted);text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tbtns{display:flex;gap:8px}
+.btn{font-size:12px;color:var(--ink);background:#0d1530;border:2px solid #34437a;padding:7px 12px;min-height:40px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;text-decoration:none}
+.btn:hover{border-color:var(--route);color:var(--route)}
+.btn.primary{background:var(--route);color:#1a1200;border-color:var(--route);font-weight:700}
+.btn.primary:hover{background:#ffd76e;color:#1a1200}
+.btn[aria-pressed="true"]{background:var(--now);border-color:var(--now);color:#fff}
 
-      gtag('js', new Date());
+/* map */
+.map{flex:1;position:relative;min-height:0;overflow:hidden}
+canvas#map{position:absolute;inset:0;width:100%;height:100%;cursor:default}
+.radar{position:absolute;inset:0;pointer-events:none;background:
+  radial-gradient(120% 90% at 30% 50%,transparent 55%,rgba(0,0,0,.55)),
+  repeating-linear-gradient(to bottom,transparent 0 3px,rgba(0,0,0,.12) 3px 4px)}
+.hud{position:absolute;left:max(16px,env(safe-area-inset-left,0px));top:14px;z-index:3;display:flex;flex-direction:column;gap:2px;pointer-events:none;text-shadow:0 2px 0 #000}
+.hud small{font-size:10.5px;letter-spacing:2.4px;color:var(--route);font-weight:700}
+.hud b{font-family:var(--pixel);font-weight:400;font-size:clamp(34px,5vw,56px);line-height:.85}
+.hud span{font-size:12px;color:var(--ink-soft)}
 
-      gtag('config', 'UA-152742205-1');
-    </script>
-    <script>
-      (function (h, o, t, j, a, r) {
-        h.hj = h.hj || function () {
-          (h.hj.q = h.hj.q || []).push(arguments)
-        };
-        h._hjSettings = {hjid: 1835826, hjsv: 6};
-        a = o.getElementsByTagName('head')[0];
-        r = o.createElement('script');
-        r.async = 1;
-        r.src = t + h._hjSettings.hjid + j + h._hjSettings.hjsv;
-        a.appendChild(r);
-      })(window, document, 'https://static.hotjar.com/c/hotjar-', '.js?sv=');
-    </script>
-    <script src="https://www.googleoptimize.com/optimize.js?id=OPT-WHKDH52"></script>
-    <script>
-      (function (w, d, s, l, i) {
-        w[l] = w[l] || [];
-        w[l].push({
-          'gtm.start':
-            new Date().getTime(), event: 'gtm.js'
-        });
-        var f = d.getElementsByTagName(s)[0],
-          j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : '';
-        j.async = true;
-        j.src =
-          'https://www.googletagmanager.com/gtm.js?id=' + i + dl;
-        f.parentNode.insertBefore(j, f);
-      })(window, document, 'script', 'dataLayer', 'GTM-WDMXFQP');
-    </script>
+/* boarding pass */
+.pass{position:absolute;z-index:5;right:max(16px,env(safe-area-inset-right,0px));top:16px;bottom:16px;width:min(430px,44vw);display:flex;flex-direction:column;
+  background:var(--paper);color:var(--paper-ink);border-radius:14px;box-shadow:0 18px 50px rgba(0,0,0,.55);overflow:hidden;transition:transform .45s cubic-bezier(.22,1,.36,1),opacity .35s}
+.pass.out{transform:translateX(30px);opacity:0}
+.p-head{background:var(--paper-ink);color:var(--paper);display:flex;justify-content:space-between;align-items:center;padding:10px 16px;font-size:11px;letter-spacing:2px;font-weight:700}
+.p-head b{font-family:var(--pixel);font-weight:400;font-size:22px;letter-spacing:1px;color:var(--stub)}
+.p-body{flex:1;overflow:auto;padding:16px;display:flex;flex-direction:column;gap:14px;-webkit-user-select:text;user-select:text}
+.route{display:grid;grid-template-columns:1fr auto 1fr;align-items:end;gap:8px}
+.route .c{display:flex;flex-direction:column}
+.route .c:last-child{text-align:right}
+.route small{font-size:10px;letter-spacing:1.6px;color:var(--paper-muted);font-weight:700}
+.route b{font-family:var(--pixel);font-weight:400;font-size:52px;line-height:.8}
+.route span{font-size:11.5px;color:var(--paper-muted)}
+.route .pl{font-size:22px;padding-bottom:16px;color:var(--paper-muted)}
+.meta{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;border-top:2px dashed #c8bfa6;border-bottom:2px dashed #c8bfa6;padding:10px 0}
+.meta small{display:block;font-size:9.5px;letter-spacing:1.6px;color:var(--paper-muted);font-weight:700}
+.meta b{font-size:13px}
+.p-title h2{margin:0;font-family:var(--pixel);font-weight:400;font-size:44px;line-height:.85;text-wrap:balance}
+.p-title p{margin:4px 0 0;font-size:13px;color:#2d4f8a;font-weight:600}
+.p-body ul{margin:0;padding-left:18px;font-size:13px;line-height:1.5}
+.p-body li+li{margin-top:4px}
+.lbl{font-size:10px;letter-spacing:2px;color:var(--paper-muted);font-weight:700;margin:0 0 6px}
+.cargo{display:flex;flex-wrap:wrap;gap:6px}
+.tk{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;padding:3px 8px 3px 4px;border:2px solid var(--paper-ink);background:#fff}
+.tk i{width:16px;height:16px;flex:none;display:block}
+.tk.s i{background:radial-gradient(circle at 40% 40%,#ffe58a,#e5a800 70%);border-radius:50%;box-shadow:0 0 0 1px #6b4a00}
+.tk.c i{background:linear-gradient(90deg,#7cc7ff 70%,#2f6fb0 70%);box-shadow:0 0 0 1px #0a2a4a}
+.tk.a{background:#ffe7a3}
+.tk.a i{background:conic-gradient(from 0deg,#ffb703,#ffd34d,#ffb703);clip-path:polygon(50% 0,62% 35%,100% 38%,70% 60%,80% 100%,50% 78%,20% 100%,30% 60%,0 38%,38% 35%)}
+.post{position:relative;background:#fffaf0;border:1px solid #d9cfb4;padding:12px 14px;box-shadow:3px 3px 0 #d9cfb4;transform:rotate(-.6deg)}
+.post::after{content:"";position:absolute;right:10px;top:10px;width:30px;height:36px;background:repeating-linear-gradient(45deg,#ff5ea8 0 3px,#fff 3px 6px);opacity:.75;outline:2px dashed #ff5ea8;outline-offset:-4px}
+.post p{margin:0 40px 6px 0;font-size:13px;line-height:1.5;font-style:italic}
+.post b{font-size:11px;color:#6a3fb0}
+.pnav{display:flex;justify-content:space-between;align-items:center;margin-top:6px;font-size:11px;color:var(--paper-muted)}
+.pnav button{background:none;border:2px solid var(--paper-ink);color:var(--paper-ink);min-width:36px;min-height:32px;cursor:pointer}
+.barcode{height:44px;margin-top:auto;background:repeating-linear-gradient(90deg,var(--paper-ink) 0 2px,transparent 2px 4px,var(--paper-ink) 4px 5px,transparent 5px 8px,var(--paper-ink) 8px 11px,transparent 11px 12px)}
+.p-foot{padding:0 16px 14px;display:flex;flex-direction:column;gap:6px}
+.p-foot small{font-size:10px;letter-spacing:1.4px;color:var(--paper-muted)}
+.cheers{display:flex;align-items:flex-end;gap:10px}
+.cheers .ph{position:relative;width:128px;height:160px;flex:none;background:linear-gradient(#2a1450,#5a1f6a);border:3px solid var(--paper-ink)}
+.cheers .ph img{position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated}
+.cheers .ph svg{position:absolute;right:-14px;bottom:18px;width:44px;height:64px;image-rendering:pixelated;animation:clink 2.4s ease-in-out infinite;transform-origin:50% 100%}
+@keyframes clink{0%,70%,100%{transform:rotate(0)}80%{transform:rotate(-14deg) translateY(-6px)}90%{transform:rotate(6deg)}}
+.cheers .bub{background:var(--paper-ink);color:var(--paper);font-family:var(--pixel);font-size:26px;line-height:1;padding:6px 10px;margin-bottom:110px;position:relative}
+.addr{font-size:14px;padding:8px 10px;background:#fff;border:2px solid var(--paper-ink);user-select:all;-webkit-user-select:all;word-break:break-all}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.pbtn{font-size:12px;font-weight:700;padding:8px 12px;min-height:40px;border:2px solid var(--paper-ink);background:var(--paper-ink);color:var(--paper);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center}
+.pbtn.alt{background:transparent;color:var(--paper-ink)}
+.pbtn:hover{background:#3a3960;color:#fff}
+
+/* bottom timeline */
+.bar{display:flex;align-items:center;gap:10px;padding-top:10px;padding-bottom:calc(10px + env(safe-area-inset-bottom,0px));
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));border-top:1px solid #18223f;background:#040817;position:relative;z-index:10}
+.stops{flex:1;min-width:0;display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;padding:2px}
+.stops::-webkit-scrollbar{display:none}
+.stop{flex:none;display:flex;flex-direction:column;align-items:flex-start;gap:0;padding:5px 10px;min-height:44px;background:#0b1229;border:2px solid #1f2a4d;color:var(--ink-muted);cursor:pointer;text-align:left}
+.stop b{font-family:var(--pixel);font-weight:400;font-size:20px;line-height:1;color:var(--ink-soft)}
+.stop span{font-size:10px;letter-spacing:1px;white-space:nowrap}
+.stop.seen{border-color:#34437a}
+.stop.now{border-color:var(--route);background:#1a1a2e}
+.stop.now b{color:var(--route)}
+
+/* passport overlay */
+.ov{position:fixed;inset:0;z-index:50;background:rgba(2,4,12,.88);overflow:auto;display:flex;align-items:flex-start;justify-content:center;
+  padding-block:max(20px,env(safe-area-inset-top,0px)) 32px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.ov[hidden]{display:none}
+.book{width:min(980px,100%);display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);background:#16224a;border-radius:16px;padding:12px;gap:12px;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+@media (max-width:760px){.book{grid-template-columns:minmax(0,1fr)}}
+.page{background:var(--paper);color:var(--paper-ink);border-radius:8px;padding:18px;display:flex;flex-direction:column;gap:12px;-webkit-user-select:text;user-select:text;min-width:0}
+.page h2{margin:0;font-family:var(--pixel);font-weight:400;font-size:40px;line-height:.85}
+.idp{display:grid;grid-template-columns:96px minmax(0,1fr);gap:14px;align-items:start}
+.idp img{width:96px;height:120px;image-rendering:pixelated;background:#cfd8ea;border:2px solid var(--paper-ink)}
+.idp dl{margin:0;display:grid;gap:6px;font-size:12.5px}
+.idp dt{font-size:9.5px;letter-spacing:1.6px;color:var(--paper-muted);font-weight:700}
+.idp dd{margin:0;font-weight:600}
+.mrz{font-family:var(--mono);font-size:11px;letter-spacing:1.5px;color:var(--paper-muted);word-break:break-all;line-height:1.4;border-top:2px dashed #c8bfa6;padding-top:8px}
+.stamps{display:flex;flex-wrap:wrap;gap:10px}
+.stamp{--c:#2f6fb0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;min-width:92px;min-height:60px;padding:6px 8px;border:3px double var(--c);color:var(--c);
+  font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;border-radius:6px;opacity:.9}
+.stamp small{font-size:9px;font-weight:600;letter-spacing:1px}
+.stamp.round{border-radius:50%;width:96px;height:96px;padding:10px}
+.stamp.off{opacity:.18;filter:grayscale(1)}
+.legend{font-size:11.5px;color:var(--paper-muted)}
+
+@media (max-width:760px){
+  .pilot span{display:none}.pilot b{font-size:22px}.pilot img{width:32px;height:40px}
+  .pass{left:max(10px,env(safe-area-inset-left,0px));right:max(10px,env(safe-area-inset-right,0px));top:auto;bottom:10px;width:auto;max-height:50%}
+  .p-head{font-size:9.5px;letter-spacing:1.2px;padding:8px 12px}.p-head b{font-size:18px;white-space:nowrap}
+  .hud{display:none}.barcode{height:24px}.p-body{padding:12px}
+  .route b{font-size:40px}.p-title h2{font-size:34px}
+  .hud b{font-size:30px}
+  .btn .lt{display:none}
+  .cheers .ph{width:96px;height:120px}.cheers .bub{margin-bottom:80px}
+}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
 </head>
 <body>
-<noscript>
-    <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WDMXFQP"
-                  height="0" width="0" style="display:none;visibility:hidden"></iframe>
-</noscript>
-<main class="container">
-    <div class="toggle toggle--push">
-        <input type="checkbox" id="toggle--push" class="toggle--checkbox">
-        <label class="toggle--btn" for="toggle--push" data-label-on="on"  data-label-off="off"></label>
+
+<div class="app">
+  <header class="top">
+    <div class="pilot"><img id="pilotImg" alt="Pixel portrait of Fernanda"><div><b>FERNANDA ARAUJO</b><span>Captain · Staff Frontend Engineer</span></div></div>
+    <div class="tbtns">
+      <button class="btn" type="button" id="passBtn">▣ <span class="lt">Passport</span></button>
+      <button class="btn" type="button" id="tour" aria-pressed="false">▶ <span class="lt">Auto tour</span></button>
     </div>
-    <img class="avatar" src="assets/img/avatar.svg">
-    <section class="about">
-        <p class="present">Fernanda Araujo is currently a Senior Frontend and Mobile Developer at <b><a href="https://www.linkedin.com/company/sanar/about/" target="_blank">Sanar</a></b>.</p>
-        <p class="present">Previously she was a Senior Consultant Developer at <b><a href="https://www.thoughtworks.com/" target="_blank">ThoughtWorks.</a></b></p>
-        <p class="links">
-            <a class="social" href="mailto:nanda.arf@gmail.com">Email</a>
-            <a class="social" target="_blank" href="https://www.linkedin.com/in/fernandaaraujof/">Linkedin</a>
-            <a class="social" target="_blank" href="https://github.com/fernandaaraujo">Github</a>
-            <a class="social" target="_blank" href="https://dribbble.com/faraujof">Dribbble</a>
-            <a class="social" target="_blank" href="https://drive.google.com/file/d/1U2jTvzXt1xVu7-6zKR2SmRqvgQoAudkR/view?usp=sharing">Resume</a>
-        </p>
-    </section>
-</main>
+  </header>
+
+  <div class="map" id="mapWrap">
+    <canvas id="map" aria-label="World map of Fernanda's career route"></canvas>
+    <div class="radar" aria-hidden="true"></div>
+    <div class="hud" aria-hidden="true"><small id="h-k">FLIGHT LOG</small><b id="h-t">Belo Horizonte</b><span id="h-s">2010</span></div>
+    <article class="pass" id="pass" aria-live="polite"></article>
+  </div>
+
+  <nav class="bar" aria-label="Route">
+    <button class="btn" type="button" id="prev" aria-label="Previous stop">◀</button>
+    <div class="stops" id="stops"></div>
+    <button class="btn primary" type="button" id="next">Next flight ▶</button>
+  </nav>
+</div>
+
+<div class="ov" id="ov" hidden role="dialog" aria-modal="true" aria-label="Passport">
+  <div class="book">
+    <div class="page">
+      <div class="row" style="justify-content:space-between"><span class="lbl" style="margin:0">PASSPORT · CAREER</span><button class="pbtn alt" type="button" id="ovClose">✕ Close</button></div>
+      <div class="idp"><img id="pImg" alt="Pixel portrait of Fernanda"><dl>
+        <div><dt>NAME</dt><dd>Fernanda Araujo Fernandes</dd></div>
+        <div><dt>ROLE</dt><dd>Staff Frontend Engineer</dd></div>
+        <div><dt>BASE</dt><dd>Belo Horizonte, BR · UTC−3</dd></div>
+        <div><dt>LANGUAGES</dt><dd>PT · EN · ES</dd></div>
+        <div><dt>IN SERVICE SINCE</dt><dd>2014</dd></div></dl></div>
+      <div class="mrz">P&lt;CNFARAUJO&lt;FERNANDES&lt;&lt;FERNANDA&lt;&lt;&lt;&lt;&lt;&lt;&lt;<br>STAFF&lt;FRONTEND&lt;REACT&lt;TS&lt;GRAPHQL&lt;RN&lt;&lt;&lt;&lt;</div>
+      <div><p class="lbl">CONTACT</p><div class="row"><span class="addr" id="mail2">nanda.arf@gmail.com</span><button class="pbtn" type="button" data-copy="mail2">Copy email</button><a class="pbtn alt" href="https://www.linkedin.com/in/fernandaaraujof" target="_blank" rel="noopener">LinkedIn ↗</a></div></div>
+    </div>
+    <div class="page">
+      <h2>Stamps</h2>
+      <p class="legend" id="stampCount"></p>
+      <div><p class="lbl">AWARDS</p><div class="stamps" id="stA"></div></div>
+      <div><p class="lbl">STACK · SKILLS</p><div class="stamps" id="stS"></div></div>
+      <div><p class="lbl">VISAS · EDUCATION &amp; COURSES</p><div class="stamps" id="stC"></div></div>
+      <div><p class="lbl">EMPLOYERS</p><div class="stamps" id="stE"></div></div>
+    </div>
+  </div>
+</div>
+
 <script>
-  document.getElementById('toggle--push').onclick = function() {
-    if (document.body.classList && document.body.classList.toggle) {
-      document.body.classList.toggle('day');
-    }
-  };
+const ME_PNG="data:image/png;base64,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";
+const MASK={"cols": 240, "rows": 89, "step": 1.5, "lat0": 78, "first": "0", "rle": "14,2,j,6,7,x,m,3,1k,2,2k,4,1,2,3,3,3,2,4,1,f,r,1g,4,j,e,g,4,1p,3,16,o,1f,2,j,f,2c,4,1,3,1,1,1,2,2,3,1,2,2,6,h,m,1e,2,9,2,6,w,7,2,p,2,d,1,m,1,3,8,6,2,2,c,d,k,1e,3,7,3,1,11,2,d,i,1,b,f,6,4,2,1,3,b,1,1,1,2,5,1,4,7,9,k,t,9,i,1,4,3,1,1l,7,5,2,2,7,z,4,2,4,2,1,4,2,2,6,4,a,f,u,g,3,2,3,2,1,8,1,3,1,21,1,2,6,1h,6,8,5,d,w,i,3,i,1,1z,3,2,4,1h,1,1,4,7,2,1,7,8,c,6,h,6,3,6,4,2l,d,1b,2,2,1,2,5,5,9,7,d,2,i,7,2,2w,b,1c,6,1,3,3,3,2,b,5,w,8,2,2n,1,8,c,b,1,z,b,6,f,2,w,9,2,2i,5,5,i,5,a,u,b,6,2,2,1a,8,4,28,2,1,2,2,4,2,q,1,1,1,d,r,b,a,11,1,b,3,5,25,c,3,p,1,i,u,7,a,11,2,7,2,1,3,3,26,c,5,l,1,m,w,2,f,x,1,1,2,7,1,4,1,1,25,e,4,17,1,2,v,2,g,v,2,1,3,3,2k,9,3,1c,v,1,f,z,4,2,2k,9,1,1e,15,2,2,10,2,3,2l,1,1,1o,12,1,2,4,3,x,1,1,2m,1s,14,7,1,x,2n,1s,17,13,l,2,1,2,7,3,1l,1t,11,2,1,16,9,2,9,7,5,3,1l,3,2,1p,10,15,8,5,2,3,7,9,4,3,1h,5,3,1p,z,16,7,8,2,2,6,2,4,2,6,3,1e,1z,y,17,6,a,1,2,2,3,f,3,18,1,1,1,2,8,2,1r,w,18,6,a,1,3,2,2,f,3,17,4,3,7,1,1t,u,1b,3,3,1,1,3,b,1r,3,2,5,3,1t,u,1b,2,1,8,9,2,4,1,1,1k,4,2,2,6,1v,r,1b,c,h,1k,8,3,1z,o,1c,g,3,2,8,1m,6,1,23,1,1,l,1c,i,1,1w,2a,1,1,c,2,1,5,1,1b,13,2,1b,2a,2,1,9,a,1,19,v,2,9,2,1a,2c,1,1,8,a,2,1,1,15,x,1,9,4,17,2d,1,2,7,1j,x,2,9,2,2,7,y,2i,6,1i,z,2,d,7,w,2,1,2h,5,c,1,15,10,1,e,6,d,2,e,2n,5,5,2,6,3,12,10,2,c,a,9,4,9,2s,5,3,3,a,2,z,10,2,b,b,7,7,8,1,2,2r,8,1c,11,2,9,c,6,8,8,9,2,2l,1,2,6,19,11,2,7,e,5,9,1,1,7,8,1,2q,6,18,13,1,4,h,3,c,8,7,1,2t,2,19,15,k,3,d,7,9,1,2s,1,7,1,1,1,10,13,3,2,h,2,g,3,9,1,1,1,2s,1,5,2,1,6,w,17,h,2,h,1,36,1,2,c,v,16,k,1,b,2,f,2,2w,d,v,15,k,1,d,1,f,1,2w,h,t,6,3,t,w,1,2,2,8,2,32,h,14,q,w,2,1,2,7,2,32,i,14,p,y,2,1,1,5,5,30,k,13,n,11,3,4,6,1,3,2,1,2s,n,11,m,13,2,4,5,7,1,2,1,2p,o,10,l,14,3,3,5,1,2,8,1,1,2,2l,s,x,k,15,3,5,1,4,1,2,1,4,7,2i,u,w,i,17,2,l,5,2h,v,v,i,18,2,2,1,e,1,2,6,6,1,2a,u,w,h,1c,3,f,4,1,2,7,1,29,s,x,i,1j,1,f,2,2g,r,y,i,4i,q,y,i,1o,4,4,1,2l,p,y,j,5,1,1f,1,1,5,3,2,2m,o,y,j,4,3,1d,8,3,3,2n,m,y,h,4,4,1d,b,1,3,2o,l,y,g,5,4,1c,h,2n,k,10,e,7,2,1b,k,a,1,2b,k,10,f,5,3,19,n,a,1,2a,i,13,e,5,3,18,p,2k,f,16,d,6,2,19,q,2j,f,16,c,1i,q,2j,f,16,c,1i,q,2i,f,18,a,1k,p,2i,e,1a,8,1l,p,2i,d,1b,7,1m,8,4,d,2i,c,1c,5,1o,6,7,1,1,9,2j,a,3m,8,f,1,23,b,3n,7,g,1,22,a,3p,2,1,1,i,3,20,8,4d,2,21,6,3w,2,h,1,22,6,3w,2,f,2,22,6,4c,2,24,5,4c,3,24,6,6i,5,6j,4,6k,4,5,2,6e,4,6l,5,4j"};
+
+(() => {
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+$('pilotImg').src = ME_PNG; $('pImg').src = ME_PNG;
+
+/* ---------- route ---------- */
+const STOPS = [
+  {code:'CNF', city:'Belo Horizonte', cc:'BR', lat:-19.92, lon:-43.94, yr:'2010–2015', gate:'2010', cls:'Cadet',
+    k:'Departure', t:'Academy', r:'CEFET-MG · B.Eng. Computer Engineering',
+    li:['Welcome aboard: 16 years of frontend, one flight at a time.','Bachelor of Computer Engineering at CEFET-MG (2010–2015).'],
+    c:[['B.Eng. Computer Engineering · CEFET-MG']], s:[], q:[]},
+  {code:'JAE', city:'Jaén', cc:'ES', lat:37.77, lon:-3.79, yr:'During B.Eng.', gate:'EXCH', cls:'Exchange',
+    k:'Exchange', t:'Universidad de Jaén', r:'Science Without Borders exchange',
+    li:['Academic exchange in Jaén, Spain, through Science Without Borders.','Came home with a third language: Spanish.'],
+    s:['Spanish'], c:[['Exchange · Universidad de Jaén']], q:[]},
+  {code:'CNF', city:'Belo Horizonte', cc:'BR', lat:-19.92, lon:-43.94, yr:'2014–2016', gate:'2014', cls:'Analyst',
+    k:'First posts', t:'CEMIG → PRIS', r:'Solutions Analyst → Systems Analyst',
+    li:['CEMIG: requirements across departments, Function Point Analysis, BI (BW, SAS) and SAP proposals.','PRIS: features for an IP management product in C# and ASP.NET MVC; SQL Server; deployments on Azure.'],
+    s:['SAP · BI','C#','ASP.NET MVC','SQL Server','Azure'], c:[],
+    q:[['Deborah D. R. de Oliveira','QA Lead · Sep 2016','Fernanda is very dedicated and can be very collaborative. She generally does not stop because something looks hard to do.']]},
+  {code:'PRG', city:'Prague', cc:'CZ', lat:50.08, lon:14.44, yr:'2016', gate:'2016', cls:'Intern', remote:true,
+    k:'Remote mission', t:'RiteTag', r:'iOS Developer Intern',
+    li:['Built and maintained a custom iOS keyboard in Swift, with native functionality and smooth app integration.','Improved UI components and usability with a remote team.'],
+    s:['Swift','iOS extensions'], c:[],
+    q:[['Saul Fleischman','CEO, RiteKit · Mar 2017','She is good-natured, fun to work with, a proficient researcher, and someone who takes pains to learn everything about a project’s true value proposition before building.']]},
+  {code:'IND', city:'India', cc:'IN', lat:18.52, lon:73.86, yr:'2016–2017', gate:'TWU', cls:'Developer',
+    k:'Training', t:'ThoughtWorks University', r:'Developer · 5-week immersion',
+    li:['Five weeks of intensive agile training: agility, CI/CD and development best practices.','Then front-end on an international Telecom project.'],
+    s:['Agile','CI/CD'], c:[['ThoughtWorks University']], q:[]},
+  {code:'CNF', city:'Belo Horizonte', cc:'BR', lat:-19.92, lon:-43.94, yr:'2016–2020', gate:'2017', cls:'Senior',
+    k:'Consultancy', t:'ThoughtWorks', r:'Developer → Senior Developer',
+    li:['Mobile and web apps in banking, payments, airlines, telecom and logistics.','Led technical decisions (prioritization, estimation, architecture) for teams in several countries.','Designed Frontend and React Native courses and a national iOS career pathway.'],
+    s:['React','React Native','TypeScript','Swift','Webpack'], c:[['Postgrad · Distributed Software Architecture · PUC Minas']],
+    q:[['Thalita N. P. Gomes','Head of Software Engineering @ iFood · Mar 2020','Fernanda é uma pessoa super dedicada e competente, com uma enorme capacidade de assimilação de novos contextos.'],
+       ['Henrique Brighenti','Senior Software Engineer · Oct 2020','A problem solver and one of the most thoughtful people I’ve ever worked with. Always pushing for beautiful and elegant UI.'],
+       ['Jackson S. M. Matias','Senior Software Engineer · Oct 2020','Seja mobile nativo, mobile híbrido ou web, temos uma especialista que torna código em arte na tela das usuárias.'],
+       ['Rafaela Lourenço','Mobile Developer · Nov 2020','Ela olhou para a jornada das pessoas do time e ainda assim conseguia atuar nas entregas que traziam valor para o negócio.']]},
+  {code:'SSA', city:'Salvador', cc:'BR', lat:-12.97, lon:-38.50, yr:'2020–2022', gate:'2020', cls:'Senior', remote:true,
+    k:'Remote mission', t:'Sanar', r:'Senior Software Engineer',
+    li:['Architected a cross-platform app unifying all of the company’s medical education products.','CI/CD pipelines for fast, automated mobile releases.','A UI component library for web and mobile, and a design system prototype.'],
+    s:['GraphQL · Apollo','WatermelonDB','Jest','Detox','Fastlane','Design systems'], c:[], q:[]},
+  {code:'IAH', city:'Houston', cc:'US', lat:29.76, lon:-95.37, yr:'2021–2025', gate:'2021', cls:'Staff', remote:true,
+    k:'Remote mission', t:'GoCo', r:'Senior → Senior+ → Staff Software Engineer',
+    li:['HR SaaS: Payroll, Benefits, Documents, Time Off and AI-powered modules.','Staff: architecture and code patterns across domains; key technical decisions with product leadership.','Training and workshops for 40+ engineers.'],
+    s:['Relay','Flow','Cypress'], c:[['MBA · Business Management & IT · UniEuropa']], a:['Employee of the Year · 2024','Employee of the Year · 2025'],
+    q:[['Todd Morrison','Engineering leader · managed Fernanda · Aug 2024','She emerged as one of the first high-level staff engineers within a group of approximately 15 hires, consistently demonstrating excellence.']]},
+  {code:'SJC', city:'Mountain View', cc:'US', lat:37.39, lon:-122.08, yr:'2025–now', gate:'NOW', cls:'Staff', remote:true,
+    k:'Current mission', t:'Intuit', r:'Staff Software Engineer',
+    li:['One of the frontend technical leads in the post-acquisition integration.','Adapting the product to Intuit’s micro frontend architecture.','Risk analysis and architectural planning across teams.'],
+    s:['Micro frontends'], c:[['Postgrad · Software Engineering & Architecture · FIAP','in progress'],['Postgrad · AI Engineering · UNIPDS','in progress']], q:[]},
+  {code:'CNF', city:'Belo Horizonte', cc:'BR', lat:-19.92, lon:-43.94, yr:'Your team', gate:'HOME', cls:'Staff', home:true,
+    k:'Final destination', t:'Get in touch', r:'Let’s grab a beer and talk.', li:[], s:[], c:[], q:[]}
+];
+
+/* ---------- map ---------- */
+const cv=$('map'), ctx=cv.getContext('2d'), wrap=$('mapWrap');
+const land=[]; { let i=0, v=MASK.first==='1'; for(const n36 of MASK.rle.split(',')){ const n=parseInt(n36,36); if(v) for(let k=0;k<n;k++) land.push(i+k); i+=n; v=!v; } }
+const C=MASK.cols, R=MASK.rows;
+const toCell=(lat,lon)=>({x:(lon+180)/MASK.step, y:(MASK.lat0-lat)/MASK.step});
+let DPR=1, VW=0, VH=0;
+const cam={x:C/2,y:R/2,z:1}, camT={x:C/2,y:R/2,z:1};
+function resize(){ DPR=Math.min(2,devicePixelRatio||1); VW=wrap.clientWidth; VH=wrap.clientHeight; cv.width=VW*DPR; cv.height=VH*DPR; ctx.setTransform(DPR,0,0,DPR,0,0); aim(cur, true); }
+function base(){ return Math.min(VW/C, VH/R); }
+function viewRect(){ // free area not covered by the pass
+  const mob=VW<760; const passW = mob?0:Math.min(430,VW*.44)+32; const passH = mob?VH*0.5+10:0;
+  return {x:0,y:0,w:VW-passW,h:VH-passH};
+}
+function aim(i, snap){
+  const a=STOPS[Math.max(0,i-1)], b=STOPS[i]; const pa=toCell(a.lat,a.lon), pb=toCell(b.lat,b.lon);
+  const minx=Math.min(pa.x,pb.x), maxx=Math.max(pa.x,pb.x), miny=Math.min(pa.y,pb.y), maxy=Math.max(pa.y,pb.y);
+  const vr=viewRect(); const span=Math.max(maxx-minx+18, (maxy-miny+14)*(vr.w/Math.max(1,vr.h)), 46);
+  const z=Math.min(4.2, Math.max(1, (vr.w/span)/base()));
+  camT.z=z; camT.x=(minx+maxx)/2; camT.y=(miny+maxy)/2 - 3;
+  camT.ox = vr.w/2; camT.oy = vr.h/2 + (VW<760?6:20);
+  if(snap){ Object.assign(cam,camT); }
+}
+function proj(p){ const s=base()*cam.z; return {x:(p.x-cam.x)*s + (cam.ox??VW/2), y:(p.y-cam.y)*s + (cam.oy??VH/2), s}; }
+
+/* flight */
+let cur=0, fl=null; const seen=new Set([0]);
+function bez(a,b,t){ const mx=(a.x+b.x)/2, d=Math.hypot(b.x-a.x,b.y-a.y); const cy=(a.y+b.y)/2 - Math.max(6,d*0.3); const u=1-t; return {x:u*u*a.x+2*u*t*mx+t*t*b.x, y:u*u*a.y+2*u*t*cy+t*t*b.y}; }
+
+function go(i){
+  i=Math.max(0,Math.min(STOPS.length-1,i)); if(i===cur && !fl) { render(); return; }
+  const from=STOPS[cur], to=STOPS[i];
+  const sameCity = from.code===to.code;
+  const pass=$('pass'); pass.classList.add('out');
+  if(sameCity || Math.abs(i-cur)!==1 || RM){ cur=i; seen.add(i); fl=null; aim(i); setTimeout(render, RM?0:220); return; }
+  const a=toCell(from.lat,from.lon), b=toCell(to.lat,to.lon);
+  fl={a,b,t:0,dur:Math.min(3.2,1.4+Math.hypot(b.x-a.x,b.y-a.y)/90), to:i};
+  // zoom out to frame both
+  aim(i); camT.z*=0.92;
+  cur=i; updateChrome();
+}
+let lastT=performance.now();
+function frame(t){
+  const dt=Math.min(.05,(t-lastT)/1000); lastT=t;
+  if(fl){ fl.t+=dt/fl.dur; if(fl.t>=1){ fl=null; seen.add(cur); aim(cur); camT.z*=1.08; render(); } }
+  const k=Math.min(1,dt*3.2); cam.x+=(camT.x-cam.x)*k; cam.y+=(camT.y-cam.y)*k; cam.z+=(camT.z-cam.z)*k;
+  cam.ox=(cam.ox??camT.ox)+((camT.ox??VW/2)-(cam.ox??VW/2))*k; cam.oy=(cam.oy??camT.oy)+((camT.oy??VH/2)-(cam.oy??VH/2))*k;
+  draw(t); requestAnimationFrame(frame);
+}
+
+function draw(t){
+  ctx.fillStyle='#050a18'; ctx.fillRect(0,0,VW,VH);
+  const s=base()*cam.z, ds=Math.max(1, s*0.55);
+  // graticule
+  ctx.strokeStyle='rgba(124,199,255,.06)'; ctx.lineWidth=1; ctx.beginPath();
+  for(let lon=-180;lon<=180;lon+=30){ const p=proj(toCell(0,lon)); ctx.moveTo(p.x,0); ctx.lineTo(p.x,VH); }
+  for(let lat=-60;lat<=75;lat+=15){ const p=proj(toCell(lat,0)); ctx.moveTo(0,p.y); ctx.lineTo(VW,p.y); }
+  ctx.stroke();
+  // land dots
+  ctx.fillStyle='#1d2a4c';
+  const x0=cam.x-(cam.ox??VW/2)/s-1, x1=cam.x+(VW-(cam.ox??VW/2))/s+1, y0=cam.y-(cam.oy??VH/2)/s-1, y1=cam.y+(VH-(cam.oy??VH/2))/s+1;
+  for(const i of land){ const cx=i%C, cy=(i/C)|0; if(cx<x0||cx>x1||cy<y0||cy>y1) continue; const p=proj({x:cx+.5,y:cy+.5}); ctx.fillRect(p.x-ds/2,p.y-ds/2,ds,ds); }
+  // routes flown
+  const order=[...Array(STOPS.length).keys()];
+  ctx.lineWidth=Math.max(1.5,s*0.18); ctx.setLineDash([Math.max(3,s*.5),Math.max(3,s*.5)]);
+  for(let i=1;i<STOPS.length;i++){ if(!seen.has(i) || (fl && i===cur)) continue; const a=toCell(STOPS[i-1].lat,STOPS[i-1].lon), b=toCell(STOPS[i].lat,STOPS[i].lon); if(STOPS[i-1].code===STOPS[i].code) continue;
+    ctx.strokeStyle= i===cur ? 'rgba(246,195,67,.95)' : 'rgba(246,195,67,.4)'; ctx.beginPath(); for(let k=0;k<=40;k++){ const p=proj(bez(a,b,k/40)); k?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y);} ctx.stroke(); }
+  ctx.setLineDash([]);
+  // live flight
+  let plane=null;
+  if(fl){ const e=fl.t<.5?2*fl.t*fl.t:1-Math.pow(-2*fl.t+2,2)/2; ctx.strokeStyle='#f6c343'; ctx.lineWidth=Math.max(2,s*.22); ctx.beginPath();
+    for(let k=0;k<=40;k++){ const tt=e*k/40; const p=proj(bez(fl.a,fl.b,tt)); k?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y);} ctx.stroke();
+    const p=proj(bez(fl.a,fl.b,e)), q=proj(bez(fl.a,fl.b,Math.min(1,e+.01))); plane={x:p.x,y:p.y,ang:Math.atan2(q.y-p.y,q.x-p.x)}; }
+  // pins
+  const cities={}; STOPS.forEach((st,i)=>{ (cities[st.code]=cities[st.code]||{st,idx:[]}).idx.push(i); });
+  Object.values(cities).forEach(({st,idx})=>{ const p=proj(toCell(st.lat,st.lon)); const visited=idx.some(i=>seen.has(i)); const now=STOPS[cur].code===st.code && !fl;
+    const r=Math.max(4,s*.7);
+    if(now){ const pr=r+6+((t/40)%18); ctx.strokeStyle='rgba(255,94,168,'+(1-((t/40)%18)/18)+')'; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(p.x,p.y,pr,0,7); ctx.stroke(); }
+    ctx.fillStyle= now?'#ff5ea8':visited?'#5fd68e':'#3a4a7a'; ctx.fillRect(p.x-r/2,p.y-r/2,r,r);
+    ctx.strokeStyle='#050a18'; ctx.lineWidth=2; ctx.strokeRect(p.x-r/2,p.y-r/2,r,r);
+    if(visited||now){ ctx.font=`${Math.round(Math.max(18,Math.min(30,s*1.8)))}px VT323, monospace`; ctx.fillStyle= now?'#fff':'#c9d3ee'; ctx.textBaseline='bottom';
+      ctx.textBaseline='top'; ctx.fillText(st.code, p.x+r+2, p.y+2); ctx.font=`${Math.round(Math.max(10,Math.min(12,s*.9)))}px "Geist Mono", monospace`; ctx.fillStyle='#8e98b4'; ctx.textBaseline='top'; ctx.fillText(st.city.toUpperCase(), p.x+r+2, p.y+2+Math.round(Math.max(18,Math.min(30,s*1.8)))*.85); }
+  });
+  // plane + pilot
+  const P = plane || (()=>{ const p=proj(toCell(STOPS[cur].lat,STOPS[cur].lon)); return {x:p.x,y:p.y-22,ang:0,parked:true}; })();
+  drawPlane(P.x,P.y,P.ang, Math.max(1.6, Math.min(3, s*.18+1.4)), P.parked, t);
+}
+const planeRows=['.....W......','....WWW.....','R...WWW.....','RR.WWWWW....','RRWWWWWWWWWW','RRWWWWWWWWWB','RR.WWWWW....','R...WWW.....','....WWW.....','.....W......'];
+const PCOL={W:'#eef1f8',R:'#ff5ea8',B:'#7cc7ff'};
+const meImg=new Image(); meImg.src=ME_PNG;
+function drawPlane(x,y,ang,sc,parked,t){
+  ctx.save(); ctx.translate(x,y); if(parked) ctx.translate(0,Math.sin(t/400)*2);
+  // pilot bubble
+  if(meImg.complete){ const w=28*sc*.6, h=35*sc*.6; ctx.save(); ctx.imageSmoothingEnabled=false; ctx.fillStyle='#1d2a4c'; ctx.fillRect(-w/2-2,-h-14*sc-2,w+4,h+4); ctx.strokeStyle='#f6c343'; ctx.lineWidth=2; ctx.strokeRect(-w/2-2,-h-14*sc-2,w+4,h+4); ctx.drawImage(meImg,-w/2,-h-14*sc,w,h); ctx.restore(); }
+  ctx.rotate(ang); ctx.imageSmoothingEnabled=false;
+  for(let r=0;r<planeRows.length;r++) for(let c=0;c<12;c++){ const ch=planeRows[r][c]; if(PCOL[ch]){ ctx.fillStyle=PCOL[ch]; ctx.fillRect((c-6)*sc,(r-5)*sc,sc+.5,sc+.5);} }
+  ctx.restore();
+}
+
+/* ---------- pass rendering ---------- */
+let qi=0;
+const BEER='<svg viewBox="0 0 11 16" shape-rendering="crispEdges" aria-hidden="true"><rect x="1" y="0" width="7" height="3" fill="#fffaf0"/><rect x="0" y="1" width="1" height="1" fill="#fffaf0"/><rect x="8" y="1" width="1" height="1" fill="#fffaf0"/><rect x="1" y="3" width="7" height="12" fill="#d6eef6"/><rect x="2" y="4" width="5" height="10" fill="#e8a317"/><rect x="2" y="5" width="1" height="8" fill="#f6c95a"/><rect x="8" y="5" width="2" height="1" fill="#d6eef6"/><rect x="10" y="6" width="1" height="5" fill="#d6eef6"/><rect x="8" y="11" width="2" height="1" fill="#d6eef6"/><rect x="1" y="15" width="7" height="1" fill="#b9d6e0"/></svg>';
+function render(){
+  const st=STOPS[cur], from=STOPS[Math.max(0,cur-1)];
+  const pass=$('pass');
+  const head=`<div class="p-head"><span>FERNANDA AIR · ${st.home?'FINAL CALL':'BOARDING PASS'}</span><b>FA ${String(cur+1).padStart(2,'0')}/${STOPS.length}</b></div>`;
+  const route=`<div class="route"><div class="c"><small>FROM</small><b>${cur?from.code:'—'}</b><span>${cur?esc(from.city):'Start'}</span></div><div class="pl" aria-hidden="true">✈</div><div class="c"><small>TO</small><b>${st.code}</b><span>${esc(st.city)}${st.remote?' · remote':''}</span></div></div>
+    <div class="meta"><div><small>GATE</small><b>${esc(st.gate)}</b></div><div><small>DATES</small><b>${esc(st.yr)}</b></div><div><small>CLASS</small><b>${esc(st.cls)}</b></div></div>`;
+  let body='';
+  if(st.home){
+    body=`<div class="p-title"><h2>Let's grab a beer and talk.</h2><p>Final destination: your team</p></div>
+      <div class="cheers"><div class="ph"><img src="${ME_PNG}" alt="Pixel portrait of Fernanda raising a beer">${BEER}</div><div class="bub">Cheers!</div></div>
+      <p style="margin:0;font-size:13px">Hiring a Staff Frontend Engineer for frontend architecture, micro frontends or design systems? Get in touch.</p>
+      <div class="row"><span class="addr" id="mail1">nanda.arf@gmail.com</span><button class="pbtn" type="button" data-copy="mail1">Copy email</button></div>
+      <div class="row"><a class="pbtn alt" href="https://www.linkedin.com/in/fernandaaraujof" target="_blank" rel="noopener">LinkedIn ↗</a><button class="pbtn alt" type="button" data-open="passport">Open passport</button><button class="pbtn alt" type="button" data-go="0">↺ Fly again</button></div>`;
+  } else {
+    body=`<div class="p-title"><p style="margin:0 0 4px;color:var(--paper-muted);font-size:10.5px;letter-spacing:2px">${esc(st.k.toUpperCase())}</p><h2>${esc(st.t)}</h2><p>${esc(st.r)}</p></div>
+      <ul>${st.li.map(l=>`<li>${esc(l)}</li>`).join('')}</ul>`;
+    const ch=[...(st.a||[]).map(x=>`<span class="tk a"><i></i>${esc(x)}</span>`), ...st.s.map(x=>`<span class="tk s"><i></i>${esc(x)}</span>`), ...st.c.map(x=>`<span class="tk c"><i></i>${esc(x[0])}${x[1]?` · ${esc(x[1])}`:''}</span>`)];
+    if(ch.length) body+=`<div><p class="lbl">CARGO PICKED UP${st.a?' · AWARDS':''}</p><div class="cargo">${ch.join('')}</div></div>`;
+    if(st.q.length){ qi=Math.min(qi,st.q.length-1); const q=st.q[qi];
+      body+=`<div><p class="lbl">POSTCARD${st.q.length>1?'S':''}</p><div class="post"${/[ãçéáúê]/.test(q[2])?' lang="pt-BR"':''}><p>“${esc(q[2])}”</p><b>${esc(q[0])}</b><br><small style="font-size:10.5px;color:var(--paper-muted)">${esc(q[1])}</small></div>
+        ${st.q.length>1?`<div class="pnav"><button type="button" data-q="-1" aria-label="Previous postcard">◀</button><span>${qi+1} of ${st.q.length}</span><button type="button" data-q="1" aria-label="Next postcard">▶</button></div>`:''}</div>`; }
+  }
+  pass.innerHTML = head + `<div class="p-body">${route}${body}</div><div class="p-foot"><div class="barcode" aria-hidden="true"></div><small>FA·${st.code}·${esc(st.gate)} · ${st.home?'NO BAGGAGE LIMIT ON GOOD IDEAS':'SEAT 1A · WINDOW'}</small></div>`;
+  pass.classList.remove('out');
+  updateChrome();
+}
+function updateChrome(){
+  const st=STOPS[cur];
+  $('h-k').textContent = fl ? 'IN FLIGHT' : st.k.toUpperCase(); $('h-t').textContent = st.city; $('h-s').textContent = st.yr + (st.remote?' · remote':'');
+  [...$('stops').children].forEach((b,i)=>{ b.classList.toggle('now',i===cur); b.classList.toggle('seen',seen.has(i)); b.setAttribute('aria-current', i===cur?'step':'false'); });
+  const n=$('stops').children[cur]; if(n) n.scrollIntoView({block:'nearest',inline:'center',behavior:RM?'auto':'smooth'});
+  $('next').textContent = cur===STOPS.length-1 ? '↺ Fly again' : (cur===0?'Take off ▶':'Next flight ▶');
+  $('prev').disabled = cur===0;
+  stamps();
+}
+
+/* ---------- timeline ---------- */
+$('stops').innerHTML = STOPS.map((s,i)=>`<button class="stop" type="button" data-go="${i}"><b>${s.home?'★ ':''}${s.code}</b><span>${esc(s.home?'Contact':s.t)}</span></button>`).join('');
+
+/* ---------- passport ---------- */
+function stamps(){
+  const vis=[...seen].filter(i=>!fl||i!==cur);
+  const all={S:[],C:[],A:[],E:[]}; const got={S:new Set(),C:new Set(),A:new Set(),E:new Set()};
+  STOPS.forEach((st,i)=>{ const on=vis.includes(i);
+    st.s.forEach(x=>{ if(!all.S.find(e=>e[0]===x)) all.S.push([x,st.code]); if(on) got.S.add(x); });
+    st.c.forEach(x=>{ all.C.push([x[0],x[1]||st.yr]); if(on) got.C.add(x[0]); });
+    (st.a||[]).forEach(x=>{ all.A.push([x,'GoCo']); if(on) got.A.add(x); });
+    if(!st.home && st.cc){ const nm=st.t; if(!all.E.find(e=>e[0]===nm)) all.E.push([nm,st.city+' · '+st.yr]); if(on) got.E.add(nm); } });
+  const cols=['#2f6fb0','#b03a6e','#2f8a5a','#7a4ab0','#b0662f','#1f7a8a'];
+  const mk=(arr,set,cls)=>arr.map(([n,sub],j)=>`<span class="stamp ${cls} ${set.has(n)?'':'off'}" style="--c:${cols[j%cols.length]};transform:rotate(${((j*37)%11)-5}deg)">${esc(n)}<small>${esc(sub)}</small></span>`).join('');
+  $('stA').innerHTML=mk(all.A,got.A,'round'); $('stS').innerHTML=mk(all.S,got.S,''); $('stC').innerHTML=mk(all.C,got.C,''); $('stE').innerHTML=mk(all.E,got.E,'round');
+  const tot=all.S.length+all.C.length+all.A.length+all.E.length, have=got.S.size+got.C.size+got.A.size+got.E.size;
+  $('stampCount').textContent=`${have} of ${tot} stamps collected. Fly the route to collect the rest, or use Auto tour.`;
+}
+function openPass(){ $('ov').hidden=false; $('ovClose').focus(); } function closePass(){ $('ov').hidden=true; $('passBtn').focus(); }
+$('passBtn').addEventListener('click',openPass); $('ovClose').addEventListener('click',closePass);
+$('ov').addEventListener('click',e=>{ if(e.target===$('ov')) closePass(); });
+
+/* ---------- input ---------- */
+let tourT=null;
+function setTour(on){ $('tour').setAttribute('aria-pressed',String(on)); clearInterval(tourT); if(on){ tourT=setInterval(()=>{ if(fl) return; if(cur>=STOPS.length-1){ setTour(false); return; } go(cur+1); }, 5200); if(!fl && cur<STOPS.length-1) go(cur+1); } }
+$('tour').addEventListener('click',()=>setTour($('tour').getAttribute('aria-pressed')!=='true'));
+$('next').addEventListener('click',()=>{ setTour(false); go(cur===STOPS.length-1?0:cur+1); });
+$('prev').addEventListener('click',()=>{ setTour(false); go(cur-1); });
+document.addEventListener('click',e=>{
+  const g=e.target.closest('[data-go]'); if(g){ setTour(false); go(+g.dataset.go); return; }
+  const q=e.target.closest('[data-q]'); if(q){ const n=STOPS[cur].q.length; qi=(qi+ +q.dataset.q + n)%n; render(); return; }
+  if(e.target.closest('[data-open="passport"]')){ openPass(); return; }
+  const cb=e.target.closest('[data-copy]'); if(cb){ const el=$(cb.dataset.copy), t=el.textContent.trim();
+    const ok=()=>{ cb.textContent='Copied'; setTimeout(()=>cb.textContent='Copy email',1600); };
+    const fb=()=>{ const r=document.createRange(); r.selectNodeContents(el); const s=getSelection(); s.removeAllRanges(); s.addRange(r); cb.textContent='Selected · press Ctrl/⌘ C'; };
+    try{ navigator.clipboard.writeText(t).then(ok,fb); }catch(_){ fb(); } }
+});
+const origGo=go;
+addEventListener('keydown',e=>{ if(!$('ov').hidden){ if(e.key==='Escape') closePass(); return; }
+  if(e.key==='ArrowRight'){ setTour(false); go(cur+1); } if(e.key==='ArrowLeft'){ setTour(false); go(cur-1); } });
+cv.addEventListener('click',e=>{ const r=cv.getBoundingClientRect(); const mx=e.clientX-r.left, my=e.clientY-r.top; let best=-1,bd=24;
+  STOPS.forEach((st,i)=>{ const p=proj(toCell(st.lat,st.lon)); const d=Math.hypot(p.x-mx,p.y-my); if(d<bd){ bd=d; best=i; } });
+  if(best>=0){ const same=STOPS.map((s,i)=>i).filter(i=>STOPS[i].code===STOPS[best].code); const pick=same.find(i=>i>cur)??same[0]; setTour(false); go(pick); } });
+cv.addEventListener('mousemove',e=>{ const r=cv.getBoundingClientRect(); const mx=e.clientX-r.left, my=e.clientY-r.top; cv.style.cursor = STOPS.some(st=>{ const p=proj(toCell(st.lat,st.lon)); return Math.hypot(p.x-mx,p.y-my)<24; })?'pointer':'default'; });
+// a flight that lands re-renders the pass
+const _render=render;
+let rt; addEventListener('resize',()=>{ clearTimeout(rt); rt=setTimeout(()=>{ resize(); },120); });
+
+resize(); render(); aim(0,true);
+document.fonts && document.fonts.ready.then(()=>{});
+requestAnimationFrame(t=>{ lastT=t; frame(t); });
+})();
 </script>
+
 </body>
 </html>
